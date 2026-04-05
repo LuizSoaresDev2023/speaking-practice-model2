@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Speaking Practice</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0d0d0d;
+      --card: #1a1a1a;
+      --card-alt: #222222;
+      --text: #f1f1f1;
+      --accent: #00e5ff; /* Neon Azul (mantido do design que você gostou) */
+      --accent-hover: #00b3cc;
+      --shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+      --radius: 14px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--accent);
+      margin: 0 0 10px;
+      font-size: clamp(1.8rem, 4vw, 2.2rem);
+      text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #aaaaaa;
+      font-size: clamp(0.95rem, 2.3vw, 1.05rem);
+      margin-bottom: 30px;
+    }
+
+    /* Botão de parar áudio fixo no topo (Sticky) */
+    .top-actions {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 25px;
+      position: sticky;
+      top: 10px;
+      z-index: 100;
+    }
+
+    .btn-stop {
+      min-height: 46px;
+      padding: 10px 24px;
+      border: 1px solid #ff4444;
+      border-radius: 10px;
+      background: #2a0d0d;
+      color: #ff4444;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .btn-stop:hover {
+      background: #ff4444;
+      color: #fff;
+    }
+
+    .block {
+      background: var(--card);
+      padding: 20px;
+      border-radius: var(--radius);
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0, 229, 255, 0.1);
+    }
+
+    .block-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #333;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .block-title {
+      font-size: 1.3rem;
+      color: var(--accent);
+      margin: 0;
+      font-weight: bold;
+    }
+
+    .block-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .sentence-item {
+      background: var(--card-alt);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      border-left: 4px solid var(--accent);
+      transition: border-color 0.3s;
+    }
+
+    /* O texto em inglês agora aparece diretamente e em destaque */
+    .en-text {
+      font-size: 1.3rem; 
+      font-weight: 800; 
+      color: var(--text);
+      margin-bottom: 15px;
+      letter-spacing: 0.3px; 
+    }
+
+    .sentence-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-play {
+      background: #222;
+      color: var(--text);
+      border: 1px solid #444;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-play:hover {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    .btn-block-play {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-block-play:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 600px) {
+      .block-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .sentence-controls, .block-controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .btn-play, .btn-block-play {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Speaking Practice</h1>
+    <div class="subtitle">Practice English listening and speaking with responsive audio controls</div>
+
+    <div class="top-actions">
+      <button class="btn-stop" onclick="stopSpeech()">⏹ Stop Audio</button>
+    </div>
+
+    <!-- BLOCO 1 -->
+    <div class="block" id="block-1">
+      <div class="block-header">
+        <h2 class="block-title">Block 1</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-1', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-1', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m a very goal-oriented person.">I’m a very goal-oriented person.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="When I set goals and achieve them, I feel really happy.">When I set goals and achieve them, I feel really happy.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="There’s something satisfying about completing a challenge.">There’s something satisfying about completing a challenge.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="But I’ve learned that happiness is more about the journey than the result.">But I’ve learned that happiness is more about the journey than the result.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I enjoy the process of improving myself step by step.">I enjoy the process of improving myself step by step.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="In the end, the journey matters more than the destination.">In the end, the journey matters more than the destination.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 2 -->
+    <div class="block" id="block-2">
+      <div class="block-header">
+        <h2 class="block-title">Block 2</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-2', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-2', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m a goal-oriented person.">I’m a goal-oriented person.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Set a goal. Achieve a goal. Reach a goal.">Set a goal. Achieve a goal. Reach a goal.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Complete a challenge. Check off a task.">Complete a challenge. Check off a task.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Enjoy the process. Make progress.">Enjoy the process. Make progress.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Improve myself.">Improve myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="The journey matters more than the destination.">The journey matters more than the destination.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 3 -->
+    <div class="block" id="block-3">
+      <div class="block-header">
+        <h2 class="block-title">Block 3</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-3', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-3', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m inspired by people who are determined.">I’m inspired by people who are determined.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="People who set goals and go after them.">People who set goals and go after them.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="They don’t care about other people’s opinions.">They don’t care about other people’s opinions.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="They stay focused on what they want.">They stay focused on what they want.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I try to learn from them and apply it to my life.">I try to learn from them and apply it to my life.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="They don’t give up easily.">They don’t give up easily.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 4 -->
+    <div class="block" id="block-4">
+      <div class="block-header">
+        <h2 class="block-title">Block 4</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-4', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-4', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Be inspired by. Determined person.">Be inspired by. Determined person.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Set a goal. Go after a goal.">Set a goal. Go after a goal.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Stay focused.">Stay focused.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Not care about opinions.">Not care about opinions.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Learn from others. Apply it to my life.">Learn from others. Apply it to my life.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Not give up easily. Put something into practice.">Not give up easily. Put something into practice.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 5 -->
+    <div class="block" id="block-5">
+      <div class="block-header">
+        <h2 class="block-title">Block 5</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-5', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-5', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I want to become a better developer.">I want to become a better developer.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m working towards my goals.">I’m working towards my goals.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I want to work in a big tech company.">I want to work in a big tech company.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I want to work abroad.">I want to work abroad.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m studying a lot to improve myself.">I’m studying a lot to improve myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I want to build systems that make life easier.">I want to build systems that make life easier.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 6 -->
+    <div class="block" id="block-6">
+      <div class="block-header">
+        <h2 class="block-title">Block 6</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-6', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-6', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="One more day.">One more day.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="For the next five years.">For the next five years.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Become a better version of myself.">Become a better version of myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Most of the work.">Most of the work.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Work from home. Work abroad.">Work from home. Work abroad.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="In the future.">In the future.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Study a lot.">Study a lot.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Make life easier.">Make life easier.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Work on something.">Work on something.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 7 -->
+    <div class="block" id="block-7">
+      <div class="block-header">
+        <h2 class="block-title">Block 7</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-7', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-7', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’ve loved English since I was a child.">I’ve loved English since I was a child.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I used to listen to songs on the radio.">I used to listen to songs on the radio.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I can understand what they are saying.">I can understand what they are saying.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="English plays an important role in my life.">English plays an important role in my life.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="It makes me feel happy and satisfied.">It makes me feel happy and satisfied.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I enjoy learning English.">I enjoy learning English.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 8 -->
+    <div class="block" id="block-8">
+      <div class="block-header">
+        <h2 class="block-title">Block 8</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-8', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-8', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Used to. On the radio.">Used to. On the radio.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Back in the day. Nowadays.">Back in the day. Nowadays.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Listen to.">Listen to.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Make me feel.">Make me feel.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Understand what they are saying.">Understand what they are saying.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Play an important role in my life.">Play an important role in my life.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="A better person.">A better person.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 9 -->
+    <div class="block" id="block-9">
+      <div class="block-header">
+        <h2 class="block-title">Block 9</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-9', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-9', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="What motivates me is my dream.">What motivates me is my dream.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Stay disciplined.">Stay disciplined.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m working toward my goals.">I’m working toward my goals.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="When things get difficult.">When things get difficult.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I need to stay disciplined.">I need to stay disciplined.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I can’t give up easily.">I can’t give up easily.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="My dream keeps me going.">My dream keeps me going.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I need to stay focused on my goals.">I need to stay focused on my goals.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 10 -->
+    <div class="block" id="block-10">
+      <div class="block-header">
+        <h2 class="block-title">Block 10</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-10', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-10', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Keep going.">Keep going.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="When things get difficult.">When things get difficult.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Stay disciplined.">Stay disciplined.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Go after a goal.">Go after a goal.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Not give up.">Not give up.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m working toward my goals.">I’m working toward my goals.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Stay focused.">Stay focused.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Work toward something.">Work toward something.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Have a dream.">Have a dream.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Lay out a plan.">Lay out a plan.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="When things get difficult.">When things get difficult.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Keep you going.">Keep you going.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 11 -->
+    <div class="block" id="block-11">
+      <div class="block-header">
+        <h2 class="block-title">Block 11</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-11', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-11', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I want to live a peaceful life.">I want to live a peaceful life.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I want to be in harmony with myself.">I want to be in harmony with myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I don’t care about others’ opinions.">I don’t care about others’ opinions.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I want to be at peace with my mind.">I want to be at peace with my mind.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="We need to be okay with ourselves.">We need to be okay with ourselves.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Everything starts in the mind.">Everything starts in the mind.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Like a person who is obsessed with other people’s opinions.">Like a person who is obsessed with other people’s opinions.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 12 -->
+    <div class="block" id="block-12">
+      <div class="block-header">
+        <h2 class="block-title">Block 12</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-12', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-12', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Get along with.">Get along with.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Be at peace with.">Be at peace with.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="In harmony with.">In harmony with.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Care about opinions.">Care about opinions.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Hang out.">Hang out.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Spend time with.">Spend time with.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Feel satisfied with.">Feel satisfied with.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Build a life.">Build a life.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Comes from within.">Comes from within.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Self-love.">Self-love.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Obsessed with.">Obsessed with.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 13 -->
+    <div class="block" id="block-13">
+      <div class="block-header">
+        <h2 class="block-title">Block 13</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-13', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-13', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m trying to reflect on my thoughts.">I’m trying to reflect on my thoughts.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I need to choose carefully.">I need to choose carefully.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Some choices help us grow.">Some choices help us grow.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="We are the sum of our choices.">We are the sum of our choices.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m becoming more self-aware.">I’m becoming more self-aware.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m trying to improve my mindset.">I’m trying to improve my mindset.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 14 -->
+    <div class="block" id="block-14">
+      <div class="block-header">
+        <h2 class="block-title">Block 14</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-14', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-14', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Look into my mind.">Look into my mind.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Reflect on my thoughts.">Reflect on my thoughts.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Go one level higher.">Go one level higher.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Observe from the outside.">Observe from the outside.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Create a filter for.">Create a filter for.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Harmful to us.">Harmful to us.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Control my actions.">Control my actions.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="The sum of our choices.">The sum of our choices.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Part of the process.">Part of the process.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Self-awareness.">Self-awareness.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 15 -->
+    <div class="block" id="block-15">
+      <div class="block-header">
+        <h2 class="block-title">Block 15</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-15', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-15', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I need to deal with procrastination.">I need to deal with procrastination.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I break big goals into smaller steps.">I break big goals into smaller steps.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I need to be patient with myself.">I need to be patient with myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I shouldn’t be so hard on myself.">I shouldn’t be so hard on myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Forgiving myself is important.">Forgiving myself is important.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Small steps make big progress.">Small steps make big progress.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 16 -->
+    <div class="block" id="block-16">
+      <div class="block-header">
+        <h2 class="block-title">Block 16</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-16', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-16', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Deal with procrastination.">Deal with procrastination.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Break into smaller parts.">Break into smaller parts.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="One step at a time.">One step at a time.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Be patient with myself.">Be patient with myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Be hard on myself.">Be hard on myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Blame myself.">Blame myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Forgive myself.">Forgive myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Stay calm.">Stay calm.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Time to act.">Time to act.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Love myself first.">Love myself first.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 17 -->
+    <div class="block" id="block-17">
+      <div class="block-header">
+        <h2 class="block-title">Block 17</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-17', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-17', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I’m proud of my determination.">I’m proud of my determination.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I go after my goals.">I go after my goals.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I lay out a clear plan.">I lay out a clear plan.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I trust my instincts.">I trust my instincts.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I keep my promises to myself.">I keep my promises to myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I don’t give up easily.">I don’t give up easily.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 18 -->
+    <div class="block" id="block-18">
+      <div class="block-header">
+        <h2 class="block-title">Block 18</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-18', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-18', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Be proud of myself.">Be proud of myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Go after my dreams.">Go after my dreams.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Lay out a plan.">Lay out a plan.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Imagine different scenarios.">Imagine different scenarios.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Go for a walk.">Go for a walk.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Trust my gut.">Trust my gut.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Keep a habit.">Keep a habit.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Keep my promises.">Keep my promises.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="My mind goes blank.">My mind goes blank.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Learn from mistakes.">Learn from mistakes.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 19 -->
+    <div class="block" id="block-19">
+      <div class="block-header">
+        <h2 class="block-title">Block 19</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-19', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-19', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="One of my favorite memories is when my children were born.">One of my favorite memories is when my children were born.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I will never forget the first time I held my children in my arms.">I will never forget the first time I held my children in my arms.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Another unforgettable memory is the first time I kissed my wife.">Another unforgettable memory is the first time I kissed my wife.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I also have great memories from my teenage years.">I also have great memories from my teenage years.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Soccer has given me many unforgettable moments.">Soccer has given me many unforgettable moments.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="It is difficult to choose only one memory because I have many.">It is difficult to choose only one memory because I have many.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 20 -->
+    <div class="block" id="block-20">
+      <div class="block-header">
+        <h2 class="block-title">Block 20</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-20', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-20', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="One of my favorite memories.">One of my favorite memories.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I will never forget.">I will never forget.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="When my children were born.">When my children were born.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="The first time I.">The first time I.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Fall in love with.">Fall in love with.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="During my teenage years.">During my teenage years.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="A special moment in my life.">A special moment in my life.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Put my English into practice.">Put my English into practice.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I have lots of good memories.">I have lots of good memories.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="A wonderful moment.">A wonderful moment.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 21 -->
+    <div class="block" id="block-21">
+      <div class="block-header">
+        <h2 class="block-title">Block 21</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-21', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-21', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="The best way to learn something new is by putting it into practice.">The best way to learn something new is by putting it into practice.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Theory is important, but practice is what makes you improve.">Theory is important, but practice is what makes you improve.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I learn better when I apply what I study in real life.">I learn better when I apply what I study in real life.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Practice helps the content stick in my mind.">Practice helps the content stick in my mind.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Real experience teaches more than theory alone.">Real experience teaches more than theory alone.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="The more I practice, the more confident I become.">The more I practice, the more confident I become.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 22 -->
+    <div class="block" id="block-22">
+      <div class="block-header">
+        <h2 class="block-title">Block 22</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-22', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-22', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Put it into practice.">Put it into practice.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="At that time.">At that time.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Give an example.">Give an example.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Real-life experience.">Real-life experience.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Human Resources department.">Human Resources department.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Over time.">Over time.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Make it easier.">Make it easier.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Stick in my mind.">Stick in my mind.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Apply what I learned.">Apply what I learned.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="The best way to learn.">The best way to learn.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 23 -->
+    <div class="block" id="block-23">
+      <div class="block-header">
+        <h2 class="block-title">Block 23</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-23', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-23', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I try not to focus too much on stressful thoughts.">I try not to focus too much on stressful thoughts.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Meditation helps me deal with stress better.">Meditation helps me deal with stress better.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I try to shift my focus to positive things.">I try to shift my focus to positive things.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Thoughts come and go, and I do not need to follow them.">Thoughts come and go, and I do not need to follow them.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Stressful situations are temporary.">Stressful situations are temporary.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I remind myself that thoughts are just thoughts.">I remind myself that thoughts are just thoughts.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 24 -->
+    <div class="block" id="block-24">
+      <div class="block-header">
+        <h2 class="block-title">Block 24</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-24', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-24', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Deal with stress.">Deal with stress.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="At times.">At times.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Shift my focus.">Shift my focus.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Pay attention to.">Pay attention to.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Stressful thoughts.">Stressful thoughts.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="In the best way.">In the best way.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="At work.">At work.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I am not my thoughts.">I am not my thoughts.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Come and go.">Come and go.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Temporary situation.">Temporary situation.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 25 -->
+    <div class="block" id="block-25">
+      <div class="block-header">
+        <h2 class="block-title">Block 25</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-25', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-25', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="A perfect day for me is a peaceful day with no stress.">A perfect day for me is a peaceful day with no stress.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I like waking up with a clear and fresh mind.">I like waking up with a clear and fresh mind.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="A great day is when I accomplish all my goals.">A great day is when I accomplish all my goals.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="I love the feeling of accomplishment at the end of the day.">I love the feeling of accomplishment at the end of the day.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Spending time in nature makes my day perfect.">Spending time in nature makes my day perfect.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="A perfect day is when I feel at peace with myself.">A perfect day is when I feel at peace with myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOCO 26 -->
+    <div class="block" id="block-26">
+      <div class="block-header">
+        <h2 class="block-title">Block 26</h2>
+        <div class="block-controls">
+          <button class="btn-block-play" onclick="playBlock('block-26', 1.0)">▶️ Block 1.0x</button>
+          <button class="btn-block-play" onclick="playBlock('block-26', 0.5)">🐢 Block 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="A peaceful day.">A peaceful day.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="With a fresh mind.">With a fresh mind.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Accomplish my goals.">Accomplish my goals.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="At the end of the day.">At the end of the day.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Feeling of accomplishment.">Feeling of accomplishment.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Spend time in nature.">Spend time in nature.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Full of energy.">Full of energy.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="A clear mind.">A clear mind.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Reconnect with myself.">Reconnect with myself.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+      <div class="sentence-item">
+        <div class="en-text" data-text="Stress-free day.">Stress-free day.</div>
+        <div class="sentence-controls">
+          <button class="btn-play" onclick="playSentence(this, 1.0)">▶️ 1.0x</button>
+          <button class="btn-play" onclick="playSentence(this, 0.5)">🐢 0.5x</button>
+        </div>
+      </div>
+    </div>	
+	
+  </div>
+
+  <script>
+    let voices = [];
+    let currentSpeech = null;
+
+    // Carrega as vozes disponíveis
+    function loadVoices() {
+      voices = window.speechSynthesis.getVoices();
+    }
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    loadVoices();
+
+    // Busca a voz Zira (ou equivalente feminino americano)
+    function getFemaleVoice() {
+      if (!voices.length) voices = window.speechSynthesis.getVoices();
+      
+      return (
+        voices.find(v => v.name.toLowerCase().includes("zira")) ||
+        voices.find(v => v.name.toLowerCase().includes("female") && v.lang.includes("en")) ||
+        voices.find(v => v.lang === "en-US") ||
+        voices.find(v => v.lang.startsWith("en")) || 
+        voices[0]
+      );
+    }
+
+    // Toca uma frase específica lendo o data-text para evitar problemas com aspas (e.g. I'm)
+    function playSentence(btn, speed) {
+      stopSpeech(); // Para o áudio atual se houver
+      
+      const sentenceItem = btn.closest('.sentence-item');
+      if (!sentenceItem) return;
+      
+      const textElement = sentenceItem.querySelector('.en-text');
+      const text = textElement.getAttribute('data-text');
+
+      if (!text) return;
+
+      currentSpeech = new SpeechSynthesisUtterance(text);
+      currentSpeech.lang = "en-US";
+      currentSpeech.rate = speed;
+      
+      const voice = getFemaleVoice();
+      if (voice) currentSpeech.voice = voice;
+
+      window.speechSynthesis.speak(currentSpeech);
+    }
+
+    // Toca o bloco inteiro (junta as frases)
+    function playBlock(blockId, speed) {
+      stopSpeech();
+
+      const block = document.getElementById(blockId);
+      if (!block) return;
+
+      // Pega todos os textos em inglês do bloco
+      const sentences = Array.from(block.querySelectorAll('.en-text'))
+                             .map(el => el.getAttribute('data-text'));
+                             
+      // Junta as frases com uma pausa natural (ponto e espaço)
+      const fullText = sentences.join(" ");
+      
+      currentSpeech = new SpeechSynthesisUtterance(fullText);
+      currentSpeech.lang = "en-US";
+      currentSpeech.rate = speed;
+      
+      const voice = getFemaleVoice();
+      if (voice) currentSpeech.voice = voice;
+
+      window.speechSynthesis.speak(currentSpeech);
+    }
+
+    // Para qualquer reprodução
+    function stopSpeech() {
+      window.speechSynthesis.cancel();
+    }
+  </script>
+</body>
+</html>
